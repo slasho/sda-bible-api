@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 
 import booksRouter from "./routes/books";
 import chaptersRouter from "./routes/chapters";
 import versesRouter from "./routes/verses";
 import { getRandomVerseController } from "./controllers/verses";
+import { swaggerSpec } from "./swagger";
 
 const app = express();
 
@@ -15,6 +17,12 @@ app.use(
     origin: "*",
   })
 );
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api/docs.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.json(swaggerSpec);
+});
 
 app.use("/api/bible/books", booksRouter);
 app.use("/api/bible/books", chaptersRouter);
