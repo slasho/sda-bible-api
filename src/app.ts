@@ -4,6 +4,7 @@ import cors from "cors";
 import booksRouter from "./routes/books";
 import chaptersRouter from "./routes/chapters";
 import versesRouter from "./routes/verses";
+import { getRandomVerseController } from "./controllers/verses";
 
 const app = express();
 
@@ -19,25 +20,46 @@ app.use("/api/bible/books", booksRouter);
 app.use("/api/bible/books", chaptersRouter);
 app.use("/api/bible/books", versesRouter);
 
+app.get("/api/bible/random", async (_req, res, next) => {
+  try {
+    const verse = await getRandomVerseController();
+    res.json(verse);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("/api", (_req, res) => {
   const apiInfo = {
     message: "Welcome to the SDA Bible - API",
     endpoints: [
       {
-        path: "/api/books",
+        path: "/api/bible/books",
         description: "Get all the books from the Bible",
+      },
+      {
+        path: "/api/bible/books/:bookName/chapters",
+        description: "Get chapters by book name",
+      },
+      {
+        path: "/api/bible/books/:bookName/chapters/:chapter/verses",
+        description: "Get verses by book name and chapter",
         queryParameters: [
           {
-            name: "/:bookName/chapters",
-            description: "Filter chapters by book name",
-            type: "string",
+            name: "from",
+            description: "Start verse number (inclusive)",
+            type: "number",
           },
           {
-            name: "/:bookName/chapters/:chapter/verses",
-            description: "Filter verses by book name and chapter",
-            type: "string",
+            name: "to",
+            description: "End verse number (inclusive)",
+            type: "number",
           },
         ],
+      },
+      {
+        path: "/api/bible/random",
+        description: "Get a random verse from the Bible",
       },
     ],
   };
