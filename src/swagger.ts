@@ -18,6 +18,7 @@ const options: swaggerJsdoc.Options = {
       { name: "Books", description: "Bible books" },
       { name: "Chapters", description: "Chapters per book" },
       { name: "Verses", description: "Verses per chapter" },
+      { name: "Search", description: "Full-text verse search" },
       { name: "Random", description: "Random verse" },
     ],
     paths: {
@@ -116,6 +117,49 @@ const options: swaggerJsdoc.Options = {
             },
             "400": {
               description: "Invalid query parameters",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Error" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/bible/search": {
+        get: {
+          tags: ["Search"],
+          summary: "Search verses by word or phrase",
+          parameters: [
+            {
+              name: "q",
+              in: "query",
+              required: true,
+              description: "Word or phrase to search for",
+              schema: { type: "string" },
+            },
+            {
+              name: "limit",
+              in: "query",
+              required: false,
+              description: "Max number of results (default 100)",
+              schema: { type: "integer", minimum: 1 },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "List of matching verses",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/RandomVerse" },
+                  },
+                },
+              },
+            },
+            "400": {
+              description: "Missing or invalid query parameters",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/Error" },

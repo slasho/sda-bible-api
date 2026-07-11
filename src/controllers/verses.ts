@@ -1,4 +1,4 @@
-import { getVersesModel, getRandomVerseModel } from "~/models/verses";
+import { getVersesModel, getRandomVerseModel, searchVersesModel } from "~/models/verses";
 
 export const getVersesController = (
   bookName: string,
@@ -20,6 +20,34 @@ export const getVersesController = (
         resolve(verses);
       }
     }, from, to);
+  });
+};
+
+export const searchVersesController = (query: string, limit?: number) => {
+  return new Promise((resolve, reject) => {
+    searchVersesModel(
+      query,
+      (error, rows) => {
+        if (error) {
+          reject(error);
+        } else {
+          const results = rows.map((row) => {
+            const r = row as any;
+            return {
+              book: r.BOOK_NAME,
+              bookNorm: r.BOOK_NAME_NORM,
+              chapter: r.CHAPTER,
+              verse: r.VERSE_ID,
+              text: r.VERSE_TEXT,
+              subtitle: r.SUBTITLE,
+            };
+          });
+
+          resolve(results);
+        }
+      },
+      limit
+    );
   });
 };
 

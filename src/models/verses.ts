@@ -31,6 +31,22 @@ export const getVersesModel = (
   bibleDb.all(sql, params, callback);
 };
 
+export const searchVersesModel = (
+  query: string,
+  callback: (error: Error | null, rows: VerseRowProps[]) => void,
+  limit?: number
+) => {
+  const sql = `SELECT VERSES.VERSE_ID, VERSES.VERSE_TEXT, VERSES.SUBTITLE, VERSES.CHAPTER,
+      BOOKS.BOOK_NAME, BOOKS.BOOK_NAME_NORM
+    FROM VERSES
+    INNER JOIN BOOKS ON VERSES.BOOK_ID = BOOKS.BOOK_ID
+    WHERE VERSES.VERSE_TEXT LIKE ?
+    ORDER BY BOOKS.BOOK_ORDER ASC, VERSES.CHAPTER ASC, VERSES.VERSE_ID ASC
+    LIMIT ?`;
+
+  bibleDb.all(sql, [`%${query}%`, limit ?? 100], callback);
+};
+
 export const getRandomVerseModel = (
   callback: (error: Error | null, rows: VerseRowProps[]) => void
 ) => {
