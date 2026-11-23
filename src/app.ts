@@ -6,6 +6,7 @@ import booksRouter from "./routes/books";
 import chaptersRouter from "./routes/chapters";
 import versesRouter from "./routes/verses";
 import { getRandomVerseController, searchVersesController } from "./controllers/verses";
+import { getFullBibleController } from "./controllers/full";
 import { swaggerSpec } from "./swagger";
 
 const app = express();
@@ -49,6 +50,35 @@ app.get("/api/bible/search", async (req, res, next) => {
 
     const results = await searchVersesController(query, limit);
     res.json(results);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Whole Bible in one response (for offline download in the mobile app).
+app.get("/api/bible/full", async (req, res, next) => {
+  try {
+    const payload = await getFullBibleController();
+
+    res.setHeader("ETag", payload.etag);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Vary", "Accept-Encoding");
+
+    if (req.headers["if-none-match"] === payload.etag) {
+      res.status(304).end();
+      return;
+    }
+
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+    if (/\bgzip\b/.test(String(req.headers["accept-encoding"] ?? ""))) {
+      res.setHeader("Content-Encoding", "gzip");
+      res.setHeader("Content-Length", payload.gzip.length);
+      res.end(payload.gzip);
+    } else {
+      res.setHeader("Content-Length", payload.json.length);
+      res.end(payload.json);
+    }
   } catch (error) {
     next(error);
   }
@@ -106,6 +136,10 @@ app.get("/api", (_req, res) => {
             type: "number",
           },
         ],
+      },
+      {
+        path: "/api/bible/full",
+        description: "Get the whole Bible (all books, chapters and verses) in one gzip response",
       },
       {
         path: "/api/bible/random",

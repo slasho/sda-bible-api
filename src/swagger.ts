@@ -169,6 +169,32 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/api/bible/full": {
+        get: {
+          tags: ["Books"],
+          summary: "Get the whole Bible in one response",
+          description:
+            "All books with every chapter and verse. `chapters[i]` holds the verses of chapter i+1. Served gzip-compressed when the client accepts it; supports ETag / If-None-Match.",
+          responses: {
+            "200": {
+              description: "Whole Bible",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      version: { type: "string", example: "3f2a9c1b7d0e4a55" },
+                      translation_name: { type: "string", example: "Reina Valera" },
+                      books: { type: "array", items: { type: "object" } },
+                    },
+                  },
+                },
+              },
+            },
+            "304": { description: "Not modified (ETag matches)" },
+          },
+        },
+      },
       "/api/bible/random": {
         get: {
           tags: ["Random"],
